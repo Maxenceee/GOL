@@ -242,7 +242,8 @@ Mrs = function(a, b, c) {
     return a
 },
 Md = function(a, b) {
-    (b.length > 1) ? dj(a, b) : a.appendChild(b);
+    if (!a || ! b) return
+    (b.length > 1 || Array.isArray(b)) ? dj(a, b) : a.appendChild(b);
     return a
 },
 Mg = function(a, b) {
@@ -409,13 +410,13 @@ t.ToggleManualMode = function() {
         if (!this.manualMode) return
         event.preventDefault();
         this.clicking = false;
-        this.eved(event, this);
+        this.evtn(event, this);
     });
     this.table.addEventListener('mouseleave', event => {
         if (!this.manualMode) return
         event.preventDefault();
         this.clicking = false;
-        this.eved(event, this);
+        this.evtn(event, this);
     });
 };
 t.evtn = (event, t) => {
@@ -442,6 +443,77 @@ t.structAdder = function(s, a, b) {
         this.grid[a + e.x][b + e.y] = 1;
     });
     this.updateTable();
+};
+t.addStructToLib = function(s, b) {
+    if (!this.structLib) this.structLib = [];
+
+    let maxRange = getMaxRange(s),
+        structs = [];
+    maxRange.forEach(e => {
+        let tbl = genStructTab(e.size);
+        tbl.table.style.setProperty("--cell-size", (((b - 20) / 3) / (e.size)).toFixed(2)+"px");
+        structs.push(Md(Ms(Me("gol-struct", ""), "data-nodrag"), tbl.table));
+        fillStructTable(tbl, s[e.name], e);
+    });
+    console.log(structs);
+    return (structs);
+};
+
+let getMaxRange = function(a) {
+    var r = [];
+    Object.keys(a).forEach(e => {
+        var max = 0,
+            min = 0,
+            xmax = 0,
+            xmin = 0,
+            ymax = 0,
+            ymin = 0;
+        a[e].forEach(u => {
+            if (u.x > max) max = u.x;
+            if (u.y > max) max = u.y;
+            if (u.x < min) min = u.x;
+            if (u.y < min) min = u.y;
+            if (xmax < u.x) xmax = u.x;
+            if (ymax < u.y) ymax = u.y;
+            if (xmin > u.x) xmin = u.x;
+            if (ymin > u.y) ymin = u.y;
+        });
+        let j = {name: e, max: max, min: min, xmax: xmax, xmin: xmin, ymax: ymax, ymin: ymin, size: 0},
+            h = getTableSize(j);
+        j.size = h;
+        r.push(j);
+    });
+    return (r);
+},
+genStructTab = function(a) {
+    let table = Me("table", "struct-table"),
+        u = make2DArray(a);
+
+    for (let i = 0; i < a; i++) {
+        let row = Me("tr");
+        for (let j = 0; j < a; j++) {
+            let p = Me("td");
+            Md(row, p);
+            u[i][j] = p;
+        }
+        Md(table, row);
+    }
+    return ({table: table, grid: u});
+},
+fillStructTable = function(t, s, m) {
+    console.log(t, s, m);
+    let xd = (Math.abs(m.xmax) > Math.abs(m.xmin) ? m.size - 1 - Math.abs(m.xmax) : Math.abs(m.xmin)),
+        yd = (Math.abs(m.ymax) > Math.abs(m.ymin) ? m.size - 1 - Math.abs(m.ymax) : Math.abs(m.ymin));
+    if (Math.abs(m.ymax) + Math.abs(m.ymin) + 1 < m.size)
+        yd = Math.floor((m.size - Math.abs(m.ymax) + Math.abs(m.ymin)) / 2)
+    if (Math.abs(m.xmax) + Math.abs(m.xmin) + 1 < m.size)
+        xd = Math.floor((m.size - Math.abs(m.xmax) + Math.abs(m.xmin)) / 2)
+    s.forEach((e) => {
+        t.grid[yd + e.y][xd + e.x].classList.add("active");
+    });
+},
+getTableSize = function(e) {
+    return (Math.max(Math.abs(e.xmax) + Math.abs(e.xmin), Math.abs(e.ymax) + Math.abs(e.ymin))) + 1
 };
 
 let wid = function(a) {
@@ -520,18 +592,16 @@ m.initControls = function() {
             let l = Me("div", "str-scroll-list"),
                 s = '<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.37521 23.5122C5.8845 24.0098 6.74348 24.0034 7.2284 23.5185L14.4373 16.3096L21.642 23.5164C22.1354 24.0098 22.9934 24.0173 23.4931 23.5101C23.9928 23.0008 23.9949 22.162 23.5015 21.6665L16.2968 14.4501L23.5015 7.24536C23.9949 6.75201 24.0024 5.90358 23.4931 5.40389C22.9838 4.8946 22.1354 4.89249 21.642 5.39546L14.4373 12.6002L7.2284 5.39335C6.74348 4.90093 5.87489 4.88288 5.37521 5.40178C4.87764 5.91108 4.88396 6.75833 5.36888 7.24325L12.5778 14.4501L5.36888 21.6707C4.88396 22.1535 4.86803 23.0125 5.37521 23.5122Z" /></svg>',
                 p = Me("div", "menu-close red-h", {in: s});
-            Object.keys(gol_structs).forEach((e) => {
-                Md(l, Ms(Me("gol-struct", ""), "data-nodrag"));
-            });
             let n = Md(Me("draggable-element"), Md(Me("article", "panel panel-medium-small"),
                     [Md(Me("header", "panel-header"), [Me("p", "", {in: "Stuctures"}), p]), Md(Me("div", "str-list"), l)]));
             n.id = "panel-structs";
             p.onclick = () => n.remove();
             Md(Fe("main")[0], n);
+            let posn = n.getBoundingClientRect();
             positionAll({
                 default: {
                     "panel-structs": {
-                        top: pos.top,
+                        top: (pos.top + posn.height) > window.innerHeight ? (pos.top + pos.height) - posn.height : pos.top,
                         left: (pos.width * 2 + pos.left + 10) < window.innerWidth ? pos.width + pos.left + 10 : pos.left - 10 - pos.width,
                         width: 0,
                         height: 0,
@@ -541,6 +611,7 @@ m.initControls = function() {
                     },
                 }
             });
+            Md(l, t.table.addStructToLib(gol_structs, l.getBoundingClientRect().width));
         }
     };
     t.dragel.querySelector(".menu-close").onclick = function() {
@@ -601,10 +672,22 @@ m.initControls = function() {
 
 
 let gol_structs = {
-    helice: [
+    h_helice: [
         {x: 1, y: 0},
         {x: 0, y: 0},
         {x: -1, y: 0},
+    ],
+    v_helice: [
+        {x: 0, y: 1},
+        {x: 0, y: 0},
+        {x: 0, y: -1},
+    ],
+    longHelice: [
+        {x: 2, y: 0},
+        {x: 1, y: 0},
+        {x: 0, y: 0},
+        {x: -1, y: 0},
+        {x: -2, y: 0},
     ],
     littleSpaceShip: [
         {x: 0, y: 0},
@@ -616,6 +699,21 @@ let gol_structs = {
         {x: 4, y: -2},
         {x: 4, y: -1},
         {x: 3, y: 0},
+    ],
+    bigSpaceShip: [
+        {x: 0, y: 0},
+        {x: 2, y: 1},
+        {x: 3, y: 1},
+        {x: 0, y: -2},
+        {x: 1, y: -3},
+        {x: 2, y: -3},
+        {x: 3, y: -3},
+        {x: 4, y: -3},
+        {x: 5, y: -3},
+        {x: 6, y: -3},
+        {x: 6, y: -2},
+        {x: 6, y: -1},
+        {x: 5, y: 0},
     ],
     plannersCannon: [
         {x: 0, y: 0},
@@ -654,13 +752,93 @@ let gol_structs = {
         {x: 18, y: -2},
         {x: 17, y: -3},
         {x: 18, y: -3},
+    ],
+    pentadecathlon: [
+        {x: 0, y: 0},
+        {x: 1, y: 0},
+        {x: 2, y: 0},
+        {x: 3, y: 0},
+        {x: 4, y: 0},
+        {x: 5, y: 0},
+        {x: 6, y: 0},
+        {x: 7, y: 0},
+        {x: 8, y: 0},
+        {x: 9, y: 0},
+    ],
+    ossilateur: [
+        {x: 0, y: 0},
+        {x: 0, y: -1},
+        {x: 1, y: -2},
+        {x: 2, y: -2},
+        {x: -1, y: -2},
+        {x: -2, y: -2},
+        {x: 2, y: -4},
+        {x: -2, y: -4},
+        {x: 4, y: -4},
+        {x: -4, y: -4},
+        {x: 4, y: -5},
+        {x: -4, y: -5},
+        {x: 5, y: -6},
+        {x: -5, y: -6},
+        {x: 6, y: -6},
+        {x: -6, y: -6},
+        {x: 4, y: -7},
+        {x: -4, y: -7},
+        {x: 4, y: -8},
+        {x: -4, y: -8},
+        {x: -2, y: -8},
+        {x: 2, y: -8},
+        {x: -2, y: -10},
+        {x: 2, y: -10},
+        {x: 1, y: -10},
+        {x: -1, y: -10},
+        {x: 0, y: -11},
+        {x: 0, y: -12},
+    ],
+    octogone: [
+        {x: 0, y: 1},
+        {x: 1, y: 0},
+        {x: 1, y: 2},
+        {x: 2, y: 1},
+        {x: 3, y: 1},
+        {x: 4, y: 0},
+        {x: 4, y: 2},
+        {x: 5, y: 1},
+        {x: 0, y: 4},
+        {x: 1, y: 3},
+        {x: 1, y: 5},
+        {x: 2, y: 4},
+        {x: 3, y: 4},
+        {x: 4, y: 3},
+        {x: 4, y: 5},
+        {x: 5, y: 4},
+    ],
+    fountain: [
+        {x: 0, y: 0},
+        {x: 1, y: 0},
+        {x: -2, y: 1},
+        {x: 3, y: 1},
+        {x: -2, y: 2},
+        {x: 3, y: 2},
+        {x: -2, y: 3},
+        {x: 3, y: 3},
+        {x: -1, y: 4},
+        {x: 2, y: 4},
+        {x: -1, y: 5},
+        {x: 2, y: 5},
+        {x: -2, y: 6},
+        {x: 3, y: 6},
+        {x: -3, y: 6},
+        {x: 4, y: 6},
+        {x: -3, y: 5},
+        {x: 4, y: 5},
     ]
 }
 
 const beginGame = function() {
     let table = new Table(document.querySelector("gol-grid"));
     new Menu(table);
-    table.structAdder(gol_structs.plannersCannon, 20, 10);
+    table.structAdder(gol_structs.ossilateur, 50, 25);
 };
 
 (function() {
