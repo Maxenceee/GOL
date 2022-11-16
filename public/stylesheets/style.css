@@ -394,6 +394,10 @@ draggable-element.circled {
   background: var(--alive-cell);
 }
 
+.cell.temp {
+  background: var(--alive-cell);
+}
+
 .range {
   width: 100%;
   margin: 0 0 10px 0;
@@ -479,5 +483,28 @@ gol-struct {
 
 .struct-table td.active {
   background-color: var(--alive-cell);
+}
+
+.draggable-struct {
+  position: absolute;
+  pointer-events: none;
+  left: 0;
+  top: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  -webkit-transition: opacity 0.2s;
+  transition: opacity 0.2s;
+}
+
+.draggable-struct td:not(.active) {
+  border-color: transparent;
+}
+
+.dd-selected {
+  z-index: 20;
+}
+
+.table-grid-hide {
+  opacity: 0;
 }
 /*# sourceMappingURL=style.css.map */

@@ -269,27 +269,27 @@ je = function(a) {
 const Table = function(a) {
     let root = a || document.body;
     this.gridProps().genTable(root);
+    this.initManualMode();
     return (this)
 }
 let t = Table.prototype;
 t.genTable = function(a) {
-    this.table = document.createElement("table");
+    this.table = Me("table");
     this.table.id = "grid-table";
 
     for (let i = 0; i < this.grid_size_y; i++) {
-        let row = document.createElement("tr");
+        let row = Me("tr");
 
         for (let j = 0; j < this.grid_size_x; j++) {
-            let cell = document.createElement("td");
-            cell.setAttribute("class", "cell");
+            let cell = Me("td");
+            Ms(cell, "class", "cell");
             lps(i, j, cell);
-            row.appendChild(cell);
+            Md(row, cell);
             this.gridTable[j][i] = cell;
         }
-
-        this.table.appendChild(row);
+        Md(this.table, row);
     }
-    a.appendChild(this.table);
+    Md(a, this.table);
     return (this);
 };
 t.gridProps = function() {
@@ -333,10 +333,14 @@ t.countCellNeighbors = function(x, y) {
 t.updateTable = function() {
     this.grid.forEach((e, x) => {
         e.forEach((u, y) => {
-            if (u == 1) {
+            if (u == 2) {
+                this.createTempCell(x, y);
+            } if (u == 1) {
                 this.createAliveCell(x, y);
             } else if (u == 0) {
                 this.killCell(x, y);
+            } else if (u == -1) {
+                this.removeTempCell(x, y);
             }
         });
     });
@@ -364,8 +368,14 @@ t.updateCells = function() {
 t.createAliveCell = function(a, b) {
     this.gridTable[a][b].classList.add("alive");
 };
+t.createTempCell = function(a, b) {
+    this.gridTable[a][b].classList.add("temp");
+};
 t.killCell = function(a, b) {
     this.gridTable[a][b].classList.remove("alive");
+};
+t.removeTempCell = function(a, b) {
+    this.gridTable[a][b].classList.remove("temp");
 };
 t.BeginLife = function() {
     this.updateTable().updateCells();
@@ -380,6 +390,7 @@ t.PlayLifeCycle = function() {
 };
 t.PauseLifeCycle = function() {
     clearInterval(this.lifeCycle);
+    this.updateTable();
     return (this);
 };
 t.SetLifeCycleSpeed = function(a) {
@@ -392,9 +403,7 @@ t.ClearLife = function() {
     this.updateTable();
     return (this);
 };
-t.ToggleManualMode = function() {
-    this.manualMode = !this.manualMode;
-    
+t.initManualMode = function() {
     this.table.addEventListener('mousedown', event => {
         if (!this.manualMode) return
         event.preventDefault();
@@ -418,6 +427,11 @@ t.ToggleManualMode = function() {
         this.clicking = false;
         this.evtn(event, this);
     });
+    return (this);
+};
+t.ToggleManualMode = function() {
+    this.manualMode = !this.manualMode;
+    return (this);
 };
 t.evtn = (event, t) => {
     event.preventDefault();
@@ -437,55 +451,188 @@ t.rmvw = function(a, b) {
     this.grid[a][b] = 0;
     this.killCell(a, b);
 };
-t.structAdder = function(s, a, b) {
+t.structAdder = function(s, a, b, c) {
     if (!s || !a || !b) return
     s.forEach((e) => {
-        this.grid[a + e.x][b + e.y] = 1;
+        this.grid[a + e.x][b + e.y] = !c ? 1 : 2;
     });
     this.updateTable();
+    return (this);
 };
-t.addStructToLib = function(s, b) {
+t.structRemover = function(s, a, b, c) {
+    if (!s || !a || !b) return
+    s.forEach((e) => {
+        this.grid[a + e.x][b + e.y] = !c ? 0 : -1;
+    });
+    this.updateTable();
+    return (this);
+};
+t.makeAliveTemps = function() {
+    this.grid.forEach((e, i) => {
+        e.forEach((_, j) => {
+            let state = this.grid[i][j];
+
+            if (state == 2) {
+                this.removeTempCell(i, j);
+                this.createAliveCell(i, j);
+                this.grid[i][j] = 1;
+            } else if (state == -1) {
+                this.grid[i][j] = 0;
+            }
+        });
+    });
+};
+t.addStructToLib = function(s, b, c) {
     if (!this.structLib) this.structLib = [];
 
-    let maxRange = getMaxRange(s),
-        structs = [];
-    maxRange.forEach(e => {
-        let tbl = genStructTab(e.size);
-        tbl.table.style.setProperty("--cell-size", (((b - 20) / 3) / (e.size)).toFixed(2)+"px");
-        structs.push(Md(Ms(Me("gol-struct", ""), "data-nodrag"), tbl.table));
-        fillStructTable(tbl, s[e.name], e);
+    let structs = [];
+    Object.keys(s).forEach((e, i) => {
+        let m = new Struct(s[e], b);
+        this.addStructEvent(m, b);
+        // var itemX = ( i % 3 ) * b / 3 + 10,
+        //     itemY = Math.floor( i / 3 ) * ( b / 3),
+        //     tr = 'translate3d(' + itemX + 'px,' + itemY + 'px, 0)';
+        // m.s.style.transform = tr;
+        // m.s.style.height = b / 3 + "px";
+        // m.s.style.width = b / 3 + "px";
+        structs.push(m.s);
     });
-    console.log(structs);
-    return (structs);
+    Md(c, structs);
+    return (this);
+};
+t.initStructEvents = function() {
+    this.structEventSetup = true;
+
+    document.addEventListener("mousemove", this.structMouseMove.bind(this));
+    document.addEventListener('mouseup', this.structMouseUp.bind(this));
+    document.addEventListener('mouseleave', this.structMouseUp.bind(this));
+};
+t.addStructEvent = function(s, b) {
+    if (!this.structEventSetup) this.initStructEvents();
+
+    s.s.addEventListener('mousedown', event => {
+        event.preventDefault();
+        // console.log(s.s, s.s.getBoundingClientRect(), event.clientX, event.clientY);
+        if (!this._selectedElement) {
+            let m = s.s.getBoundingClientRect();
+            this._selectedElement = new Struct(s.p, b);
+            this.oldStart = null;
+            this._selectedElement.s.style.width = m.width+"px";
+            this._selectedElement.s.style.height = m.height+"px";
+            Md(document.body, this._selectedElement.s);
+
+            this._originalClickCoords = { x: event.pageX - m.left, y: event.pageY - m.top };
+            this._savedClickCoords = { x: m.left, y: m.top };
+
+            this._selectedElement.s.style.transform = 'translate3d(' + this._savedClickCoords.x + 'px,' + this._savedClickCoords.y + 'px,0)';
+
+            this._selectedElement.s.classList.add('draggable-struct');
+            this._selectedElement.s.classList.add('dd-selected');
+            this._selectedElement.s.classList.remove('dd-transition');
+        }
+    });
+};
+t.structMouseMove = function(event) {
+    if (this._selectedElement) {
+        if (event.target.classList.contains("cell")) {
+            let place = clplc(event.target);
+            if (this.oldStart && this.oldStart != place) {
+                this.structRemover(this._selectedElement.p, this.oldStart[0], this.oldStart[1], true);
+            }
+            this.oldStart = place;
+            this.structAdder(this._selectedElement.p, place[0], place[1], true);
+        }
+        var pageX = event.pageX,
+            pageY = event.pageY;
+
+        var ele = this._selectedElement.s;
+
+        var resultX = ( pageX - this._originalClickCoords.x ),
+            resultY = ( pageY - this._originalClickCoords.y );
+
+        ele.style.transform = 'translate3d(' + resultX + 'px,' + resultY + 'px,0)';
+    }
+};
+t.structMouseUp = function(event) {
+    if (this._selectedElement) {
+        this._selectedElement.s.remove();
+        this.makeAliveTemps();
+
+        this._selectedElement = null;
+        this._originalClickCoords = null;
+        this._savedClickCoords = null;
+    }
+};
+t.structMouseLeave = function(event) {
+    if (this._selectedElement) {
+        console.log(this._selectedElement);
+        this._selectedElement.s.classList.add("table-grid-hide");
+        // let r = window.innerWidth / window.innerHeight,
+        //     u = r > 1 ? Math.floor(window.innerWidth / this.csz) : Math.floor(window.innerHeight / this.csz);
+        // this._selectedElement.style.setProperty("--cell-size", u+"px");
+    }
+};
+t.structMouseOver = function(event) {
+    if (this._selectedElement) {
+        this._selectedElement.s.classList.remove("table-grid-hide");
+        if (this.oldStart) {
+            this.structRemover(this._selectedElement.p, this.oldStart[0], this.oldStart[1]);
+        }
+    }
+};
+t.strEvtn = (event, s, t) => {
+    event.preventDefault();
+    if (t.isDraggingStruct && event.target.classList.contains("cell")) {
+        let place = clplc(event.target);
+        console.log(place);
+        t.structAdder(s, place[0], place[1]);
+    }
+};
+t.summonStructMenu = function(a) {
+    if (!a) return
+    this.structMenu = new StructMenu(a);
+    this.structMenu.graphic.addEventListener('mouseleave', this.structMouseLeave.bind(this));
+    this.structMenu.graphic.addEventListener('mouseover', this.structMouseOver.bind(this));
+    this.structMenu.close.onclick = () => {
+        this.structMenu.graphic.removeEventListener('mouseleave', this.structMouseLeave.bind(this));
+        this.structMenu.graphic.removeEventListener('mouseover', this.structMouseOver.bind(this));
+        this.structMenu.delete();
+        delete this.structMenu;
+    }
 };
 
-let getMaxRange = function(a) {
-    var r = [];
-    Object.keys(a).forEach(e => {
-        var max = 0,
-            min = 0,
-            xmax = 0,
-            xmin = 0,
-            ymax = 0,
-            ymin = 0;
-        a[e].forEach(u => {
-            if (u.x > max) max = u.x;
-            if (u.y > max) max = u.y;
-            if (u.x < min) min = u.x;
-            if (u.y < min) min = u.y;
-            if (xmax < u.x) xmax = u.x;
-            if (ymax < u.y) ymax = u.y;
-            if (xmin > u.x) xmin = u.x;
-            if (ymin > u.y) ymin = u.y;
-        });
-        let j = {name: e, max: max, min: min, xmax: xmax, xmin: xmin, ymax: ymax, ymin: ymin, size: 0},
-            h = getTableSize(j);
-        j.size = h;
-        r.push(j);
+const Struct = function(a, b) {
+    this.range = this.getMaxRange(a);
+    this.strTable = this.genStructTab(this.range.size);
+    // this.strTable.table.style.setProperty("--cell-size", ((b / 3) / (this.range.size)).toFixed(2)+"px");
+    this.fillStructTable(this.strTable, a, this.range);
+    this.intrf = Md(Ms(Me("gol-struct", ""), "data-nodrag"), this.strTable.table);
+    return ({s: this.intrf, p: a});
+}
+let s = Struct.prototype;
+s.getMaxRange = function(a) {
+    var max = 0,
+        min = 0,
+        xmax = 0,
+        xmin = 0,
+        ymax = 0,
+        ymin = 0;
+    a.forEach(u => {
+        if (u.x > max) max = u.x;
+        if (u.y > max) max = u.y;
+        if (u.x < min) min = u.x;
+        if (u.y < min) min = u.y;
+        if (xmax < u.x) xmax = u.x;
+        if (ymax < u.y) ymax = u.y;
+        if (xmin > u.x) xmin = u.x;
+        if (ymin > u.y) ymin = u.y;
     });
-    return (r);
-},
-genStructTab = function(a) {
+    let j = {name: "", max: max, min: min, xmax: xmax, xmin: xmin, ymax: ymax, ymin: ymin, size: 0},
+        h = this.getTableSize(j);
+    j.size = h;
+    return (j);
+};
+s.genStructTab = function(a) {
     let table = Me("table", "struct-table"),
         u = make2DArray(a);
 
@@ -499,9 +646,8 @@ genStructTab = function(a) {
         Md(table, row);
     }
     return ({table: table, grid: u});
-},
-fillStructTable = function(t, s, m) {
-    console.log(t, s, m);
+};
+s.fillStructTable = function(t, s, m) {
     let xd = (Math.abs(m.xmax) > Math.abs(m.xmin) ? m.size - 1 - Math.abs(m.xmax) : Math.abs(m.xmin)),
         yd = (Math.abs(m.ymax) > Math.abs(m.ymin) ? m.size - 1 - Math.abs(m.ymax) : Math.abs(m.ymin));
     if (Math.abs(m.ymax) + Math.abs(m.ymin) + 1 < m.size)
@@ -511,9 +657,28 @@ fillStructTable = function(t, s, m) {
     s.forEach((e) => {
         t.grid[yd + e.y][xd + e.x].classList.add("active");
     });
-},
-getTableSize = function(e) {
+};
+s.getTableSize = function(e) {
     return (Math.max(Math.abs(e.xmax) + Math.abs(e.xmin), Math.abs(e.ymax) + Math.abs(e.ymin))) + 1
+};
+s.delete = function() {
+    this.intrf.remove();
+    delete this;
+};
+
+const StructMenu = function(pa) {
+    this.inner = Me("div", "str-scroll-list");
+    let s = '<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.37521 23.5122C5.8845 24.0098 6.74348 24.0034 7.2284 23.5185L14.4373 16.3096L21.642 23.5164C22.1354 24.0098 22.9934 24.0173 23.4931 23.5101C23.9928 23.0008 23.9949 22.162 23.5015 21.6665L16.2968 14.4501L23.5015 7.24536C23.9949 6.75201 24.0024 5.90358 23.4931 5.40389C22.9838 4.8946 22.1354 4.89249 21.642 5.39546L14.4373 12.6002L7.2284 5.39335C6.74348 4.90093 5.87489 4.88288 5.37521 5.40178C4.87764 5.91108 4.88396 6.75833 5.36888 7.24325L12.5778 14.4501L5.36888 21.6707C4.88396 22.1535 4.86803 23.0125 5.37521 23.5122Z" /></svg>';
+    this.close = Me("div", "menu-close red-h", {in: s});
+    this.graphic = Md(Me("draggable-element"), Md(Me("article", "panel panel-medium-small"),
+            [Md(Me("header", "panel-header"), [Me("p", "", {in: "Stuctures"}), this.close]), Md(Me("div", "str-list"), this.inner)]));
+    this.graphic.id = "panel-structs";
+    Md(pa, this.graphic);
+}
+let sm = StructMenu.prototype;
+sm.delete = function() {
+    this.graphic.remove();
+    delete this;
 };
 
 let wid = function(a) {
@@ -587,17 +752,11 @@ m.initControls = function() {
         t.table.ToggleManualMode();
     };
     t.str.onclick = function() {
-        if (!sivz("panel-structs")) {
+        console.log(t.table.structMenu);
+        if (!t.table.structMenu) {
             let pos = t.dragel.getBoundingClientRect();
-            let l = Me("div", "str-scroll-list"),
-                s = '<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.37521 23.5122C5.8845 24.0098 6.74348 24.0034 7.2284 23.5185L14.4373 16.3096L21.642 23.5164C22.1354 24.0098 22.9934 24.0173 23.4931 23.5101C23.9928 23.0008 23.9949 22.162 23.5015 21.6665L16.2968 14.4501L23.5015 7.24536C23.9949 6.75201 24.0024 5.90358 23.4931 5.40389C22.9838 4.8946 22.1354 4.89249 21.642 5.39546L14.4373 12.6002L7.2284 5.39335C6.74348 4.90093 5.87489 4.88288 5.37521 5.40178C4.87764 5.91108 4.88396 6.75833 5.36888 7.24325L12.5778 14.4501L5.36888 21.6707C4.88396 22.1535 4.86803 23.0125 5.37521 23.5122Z" /></svg>',
-                p = Me("div", "menu-close red-h", {in: s});
-            let n = Md(Me("draggable-element"), Md(Me("article", "panel panel-medium-small"),
-                    [Md(Me("header", "panel-header"), [Me("p", "", {in: "Stuctures"}), p]), Md(Me("div", "str-list"), l)]));
-            n.id = "panel-structs";
-            p.onclick = () => n.remove();
-            Md(Fe("main")[0], n);
-            let posn = n.getBoundingClientRect();
+            t.table.summonStructMenu(Fe("main")[0]);
+            let posn = t.table.structMenu.graphic.getBoundingClientRect();
             positionAll({
                 default: {
                     "panel-structs": {
@@ -611,7 +770,7 @@ m.initControls = function() {
                     },
                 }
             });
-            Md(l, t.table.addStructToLib(gol_structs, l.getBoundingClientRect().width));
+            t.table.addStructToLib(gol_structs, t.table.structMenu.inner.getBoundingClientRect().width, t.table.structMenu.inner);
         }
     };
     t.dragel.querySelector(".menu-close").onclick = function() {
@@ -641,6 +800,8 @@ m.initControls = function() {
             p = t.dragel.querySelector(".circled-open");
         l.classList.remove("circled");
         p.classList.add("hide");
+        t.dragel.classList.remove("circled");
+        Mrs(l, "data-nodrag");
         let an = anime({
             targets: l,
             width: l.getAttribute("drg-width"),
@@ -664,8 +825,6 @@ m.initControls = function() {
         });
         an.finished.then(() => {
             l.style.width = l.style.height = null;
-            Mrs(l, "data-nodrag");
-            t.dragel.classList.remove("circled");
         })
     };
 }
@@ -838,7 +997,7 @@ let gol_structs = {
 const beginGame = function() {
     let table = new Table(document.querySelector("gol-grid"));
     new Menu(table);
-    table.structAdder(gol_structs.ossilateur, 50, 25);
+    // table.structAdder(gol_structs.ossilateur, 50, 25);
 };
 
 (function() {

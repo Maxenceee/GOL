@@ -343,6 +343,10 @@ draggable-element {
     &.alive {
         background: var(--alive-cell);
     }
+
+    &.temp {
+        background: var(--alive-cell);
+    }
 }
 
 .range {
@@ -428,4 +432,27 @@ gol-struct {
             background-color: var(--alive-cell);
         }
     }
+}
+
+.draggable-struct {
+    position: absolute;
+    pointer-events: none;
+	left: 0;
+	top: 0;
+	box-sizing: border-box;
+	// cursor: copy;
+
+    td:not(.active) {
+        border-color: transparent;
+    }
+
+    transition: opacity 0.2s;
+}
+
+.dd-selected {
+    z-index: 20;
+}
+
+.table-grid-hide {
+    opacity: 0;
 }
