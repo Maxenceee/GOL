@@ -172,18 +172,37 @@ draggable-element.circled {
   transition: -webkit-box-shadow 150ms cubic-bezier(0.25, 0.1, 0.25, 1);
   transition: box-shadow 150ms cubic-bezier(0.25, 0.1, 0.25, 1);
   transition: box-shadow 150ms cubic-bezier(0.25, 0.1, 0.25, 1), -webkit-box-shadow 150ms cubic-bezier(0.25, 0.1, 0.25, 1);
-  visibility: visible;
+}
+
+.panel > *:not(.circled-open) {
+  -webkit-transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .panel.circled > *:not(.circled-open) {
-  visibility: hidden;
+  opacity: 0;
 }
 
 .circled-open {
+  opacity: 0;
+  display: none;
+  -webkit-transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease;
   z-index: 4;
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.circled-open.show {
+  opacity: 1;
+  display: block;
+}
+
+.circled-open > div {
+  position: relative;
   width: 100%;
   height: 100%;
   display: -webkit-box;
@@ -195,10 +214,6 @@ draggable-element.circled {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-}
-
-.circled-open.hide {
-  display: none;
 }
 
 .circled-open svg {

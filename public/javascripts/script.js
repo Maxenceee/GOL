@@ -333,6 +333,7 @@ t.countCellNeighbors = function(x, y) {
 t.updateTable = function() {
     this.grid.forEach((e, x) => {
         e.forEach((u, y) => {
+            // console.log(x, y, u);
             if (u == 2) {
                 this.createTempCell(x, y);
             } if (u == 1) {
@@ -454,7 +455,10 @@ t.rmvw = function(a, b) {
 t.structAdder = function(s, a, b, c) {
     if (!s || !a || !b) return
     s.forEach((e) => {
-        this.grid[a + e.x][b + e.y] = !c ? 1 : 2;
+        if (c && this.grid[a + e.x][b + e.y] == 1)
+            this.grid[a + e.x][b + e.y] = 3;
+        else 
+            this.grid[a + e.x][b + e.y] = !c ? 1 : 2;
     });
     this.updateTable();
     return (this);
@@ -462,15 +466,18 @@ t.structAdder = function(s, a, b, c) {
 t.structRemover = function(s, a, b, c) {
     if (!s || !a || !b) return
     s.forEach((e) => {
-        this.grid[a + e.x][b + e.y] = !c ? 0 : -1;
+        if (c && this.grid[a + e.x][b + e.y] == 3)
+            this.grid[a + e.x][b + e.y] = 1;
+        else 
+            this.grid[a + e.x][b + e.y] = !c ? 0 : -1;
     });
     this.updateTable();
     return (this);
 };
 t.makeAliveTemps = function() {
     this.grid.forEach((e, i) => {
-        e.forEach((_, j) => {
-            let state = this.grid[i][j];
+        e.forEach((u, j) => {
+            let state = u;
 
             if (state == 2) {
                 this.removeTempCell(i, j);
@@ -481,6 +488,7 @@ t.makeAliveTemps = function() {
             }
         });
     });
+    this.updateTable();
 };
 t.addStructToLib = function(s, b, c) {
     if (!this.structLib) this.structLib = [];
@@ -512,7 +520,6 @@ t.addStructEvent = function(s, b) {
 
     s.s.addEventListener('mousedown', event => {
         event.preventDefault();
-        // console.log(s.s, s.s.getBoundingClientRect(), event.clientX, event.clientY);
         if (!this._selectedElement) {
             let m = s.s.getBoundingClientRect();
             this._selectedElement = new Struct(s.p, b);
@@ -565,7 +572,7 @@ t.structMouseUp = function(event) {
 };
 t.structMouseLeave = function(event) {
     if (this._selectedElement) {
-        console.log(this._selectedElement);
+        // console.log(this._selectedElement);
         this._selectedElement.s.classList.add("table-grid-hide");
         // let r = window.innerWidth / window.innerHeight,
         //     u = r > 1 ? Math.floor(window.innerWidth / this.csz) : Math.floor(window.innerHeight / this.csz);
@@ -576,16 +583,8 @@ t.structMouseOver = function(event) {
     if (this._selectedElement) {
         this._selectedElement.s.classList.remove("table-grid-hide");
         if (this.oldStart) {
-            this.structRemover(this._selectedElement.p, this.oldStart[0], this.oldStart[1]);
+            this.structRemover(this._selectedElement.p, this.oldStart[0], this.oldStart[1], true);
         }
-    }
-};
-t.strEvtn = (event, s, t) => {
-    event.preventDefault();
-    if (t.isDraggingStruct && event.target.classList.contains("cell")) {
-        let place = clplc(event.target);
-        console.log(place);
-        t.structAdder(s, place[0], place[1]);
     }
 };
 t.summonStructMenu = function(a) {
@@ -752,7 +751,7 @@ m.initControls = function() {
         t.table.ToggleManualMode();
     };
     t.str.onclick = function() {
-        console.log(t.table.structMenu);
+        // console.log(t.table.structMenu);
         if (!t.table.structMenu) {
             let pos = t.dragel.getBoundingClientRect();
             t.table.summonStructMenu(Fe("main")[0]);
@@ -774,12 +773,13 @@ m.initControls = function() {
         }
     };
     t.dragel.querySelector(".menu-close").onclick = function() {
+        console.log("click");
         t.closed = !t.closed;
         let l = t.dragel.querySelector(".panel"),
             p = t.dragel.querySelector(".circled-open");
         t.dragel.classList.toggle("circled");
-        l.classList.toggle("circled");
-        p.classList.remove("hide");
+        l.classList.add("circled");
+        p.classList.add("show");
         Ms(l, "data-nodrag");
         t.dragel.style.setProperty("--x", "25px");
         t.dragel.style.setProperty("--y", "25px");
@@ -799,7 +799,7 @@ m.initControls = function() {
         let l = t.dragel.querySelector(".panel"),
             p = t.dragel.querySelector(".circled-open");
         l.classList.remove("circled");
-        p.classList.add("hide");
+        p.classList.remove("show");
         t.dragel.classList.remove("circled");
         Mrs(l, "data-nodrag");
         let an = anime({
