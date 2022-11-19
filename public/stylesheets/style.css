@@ -373,6 +373,11 @@ draggable-element.circled {
   color: #FFF;
 }
 
+.panel-container .panel-text {
+  color: var(--major-color);
+  cursor: default;
+}
+
 .str-list {
   position: relative;
   width: 100%;
@@ -433,6 +438,8 @@ draggable-element.circled {
   height: 20px;
   border-radius: 50%;
   background-color: var(--major-color);
+  cursor: -webkit-grab;
+  cursor: grab;
 }
 
 .range input:disabled::-webkit-slider-thumb {
@@ -521,5 +528,19 @@ gol-struct {
 
 .table-grid-hide {
   opacity: 0;
+}
+
+.str-lin-error {
+  position: absolute;
+  width: 100%;
+  top: 30%;
+  left: 0;
+  padding: 0 10px;
+}
+
+.str-lin-error p {
+  color: var(--major-color);
+  text-align: center;
+  font-size: 18px;
 }
 /*# sourceMappingURL=style.css.map */

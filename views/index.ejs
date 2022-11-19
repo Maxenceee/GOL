@@ -15,48 +15,38 @@
     <link rel="shortcut icon" type="image/png" href="/images/gol_icon.png"/>
     <title><%= title %></title>
 	<style>
-		html:not(.js), html:not(.js) body {
-			opacity: 1;
-		} 
-		html:not(.js) #DOMLoadElement {
+		.loading > *:not(.box-loader) {
 			display: none;
 		}
-		.ad-wa-loading {
-			position: fixed;
-			z-index: 100000;
-			width: 100vw;
-			height: 100vh;
-			top: 0;
-			left: 0;
-			background-color: #FFF;
-		}
-		.ad-up-box-loader {
+	</style>
+	<style>
+		.box-loader {
 			position: absolute;
-			z-index: 400;
+			z-index: 50005;
 			top: 0;
 			left: 0;
 			width: 100%;
 			height: 100%;
-			backdrop-filter: blur(20px);
-			-webkit-backdrop-filter: blur(20px);
+			backdrop-filter: blur(5px);
+			-webkit-backdrop-filter: blur(5px);
 			display: flex;
 			display: -webkit-flex;
 			justify-content: center;
 			align-items: center;
 		}
-	
+
 		.loader {
 			position: relative;
 			margin: 0 auto;
 			width: 50px;
 		}
-	
+
 		.loader::before {
 			content: '';
 			display: block;
 			padding-top: 100%;
 		}
-		
+
 		.circular {
 			animation: rotate 2s linear infinite;
 			height: 100%;
@@ -69,20 +59,28 @@
 			right: 0;
 			margin: auto;
 		}
-		
+
 		.path {
 			stroke-dasharray: 1, 200;
 			stroke-dashoffset: 0;
-			animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+			animation: dash 1.5s ease-in-out infinite;
 			stroke-linecap: round;
 		}
-		
+
+		.box-loader:not(.-blue) .path {
+			animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+		}
+
+		.box-loader.-blue .path {
+			stroke: #404d68;
+		}
+
 		@keyframes rotate {
 			100% {
 				transform: rotate(360deg);
 			}
 		}
-		
+
 		@keyframes dash {
 			0% {
 				stroke-dasharray: 1, 200;
@@ -97,7 +95,7 @@
 				stroke-dashoffset: -124px;
 			}
 		}
-		
+
 		@keyframes color {
 			100%,
 			0% {
@@ -115,6 +113,30 @@
 			}
 		}
 	</style>
+	<script>
+		var Me = function(a, b) {
+			let e = document.createElement(a);
+			e.classList.add(b);
+			return e
+		},
+		Pe = function(a, b) {
+			a.appendChild(b)
+		};
+		var Loader = function(b) {
+			let a = Me("DIV", "box-loader");
+			b && a.classList.add("-blue");
+			a.innerHTML = '<div class="loader"><svg class="circular" viewBox="25 25 50 50"><circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/></svg></div>';
+			this.loader = a
+		};
+		Loader.prototype.create = function(a) {
+			Pe(a, this.loader);
+			return this.loader
+		};
+		Loader.prototype.remove = function() {
+			this.loader.remove();
+			delete this; 
+		};
+	</script>
 </head>
 <body class="loading">
 	<noscript>
@@ -197,18 +219,6 @@
             <div class="noscript-blur"></div>
         </div>
     </noscript>
-	<div id="DOMLoadElement">
-		<div class="ad-wa-loading">
-			<div class="ad-up-box-loader">
-				<div class="loader">
-					<svg class="circular" viewBox="25 25 50 50">
-						<circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>
-					</svg>
-				</div>
-			</div>
-		</div>
-	</div>
-
 	<main>
 		<gol-grid></gol-grid>
 		<draggable-element id="panel-showreel">
@@ -241,17 +251,20 @@
 						<button data-nodrag class="panel-button" id="mnl-lf">Manual Mode</button>
 						<button data-nodrag class="panel-button" id="str-lf">Add Struct</button>
 					</div>
+					<div class="panel-container-row">
+						<p class="panel-text" id="lf-ccl">Life cycles <span>0</span></p>
+					</div>
 				</div>
             </article>
         </draggable-element>
 	</main>
 
     <script type="text/javascript">
-        this.gbar_ = {
-            CONFIG: [[[["style.css"], ["script.js", "anime.min.js"]], ["/stylesheets/", "/javascripts/"]]],
-        };
-        this.gbar_ = this.gbar_ || {};
-        (function(_) {
+		this.gbar_ = {
+			CONFIG: [[[["style.min.css"], ["script.min.js", "anime.min.js"]], ["/stylesheets/", "/javascripts/"]]],
+		};
+		this.gbar_ = this.gbar_ || {};
+		(function(_) {
 			var window = this;
 			try {
 				_.tj = function(a, b, c) {
@@ -259,15 +272,16 @@
 					a.rel = c;
 					-1 != c.toLowerCase().indexOf("stylesheet") ? (a.href = _.Bc(b), (b = _.ad(a.ownerDocument && a.ownerDocument.defaultView)) && a.setAttribute("nonce", b)) : a.href = b instanceof _.zc ? _.Bc(b) : b instanceof _.Ec ? _.Fc(b) : _.Fc(_.Lc(b))
 				};
-
+	
 			} catch (e) {
 				console.info(e)
 			}
-
+	
 			try {
+				_.loader = new Loader().create(document.body);
 				var Kd;
 				window.gbar_ && window.gbar_.CONFIG ? Kd = window.gbar_.CONFIG[0] || {} : Kd = [];
-
+	
 				_.n = this || self;
 				var yc;
 				_.zc = function(a, b) {
@@ -299,17 +313,17 @@
 					this.j = !1;
 					this.status = a
 				};
-
+	
 				_.fk = function(e) {
 					this.files ? this.files.push(e) : this.files = [e]
 				};
 				_.gk = function(a) {
-					return this.progressedCount = 0, this.files.length ? void this.files.forEach(function(e) {
+					return this.progressedCount = 0, this.files.length ? (void this.files.forEach(function(e) {
 						_.bk(e);
-					}) : void _.cmp();
+					})) : void _.cmp();
 				};
 				_.bk = function(a) {
-					a.addEventListener("load", function() {
+					a.addEventListener("load", function(evt) {
 						this.progressedCount++;
 						this.progressedCount == this.files.length && (this.fileLoaded = true, _.cmp())
 					}.bind(this));
@@ -317,11 +331,10 @@
 				_.cmp = function() {
 					if (this.fileLoaded) {
 						document.body.classList.remove('loading');
-						document.body.removeChild(document.getElementById('DOMLoadElement'));
-						document.documentElement.classList.remove('DOMNtLoad');
+						_.loader.remove();
 					}
 				};
-
+	
 				var vj = function(a) {
 					this.src = a;
 					this.j = {};
@@ -391,7 +404,7 @@
 				Bj = function(a, b) {
 					if (Dj) {
 						var c = _.me("SCRIPT");
-						c.async = !0;
+						c.defer = !0;
 						c.type = "text/javascript";
 						c.charset = "UTF-8";
 						_.zj(c, Dj);
@@ -435,6 +448,6 @@
 				console.info(e);
 			}
 		})(this.gbar_);
-    </script>
+	</script>
 </body>
 </html>

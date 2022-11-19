@@ -321,6 +321,11 @@ draggable-element {
             color: #FFF;
         }
     }
+
+    .panel-text {
+        color: var(--major-color);
+        cursor: default;
+    }
 }
 
 .str-list {
@@ -380,6 +385,7 @@ draggable-element {
         height: 20px;
         border-radius: 50%;
         background-color: var(--major-color);
+        cursor: grab;
     }
     input:disabled {
         &::-webkit-slider-thumb {
@@ -468,4 +474,18 @@ gol-struct {
 
 .table-grid-hide {
     opacity: 0;
+}
+
+.str-lin-error {
+    position: absolute;
+    width: 100%;
+    top: 30%;
+    left: 0;
+    padding: 0 10px;
+
+    p {
+        color: var(--major-color);
+        text-align: center;
+        font-size: 18px;
+    }
 }

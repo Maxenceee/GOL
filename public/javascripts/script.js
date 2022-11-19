@@ -266,6 +266,25 @@ je = function(a) {
     return "string" == typeof a
 }
 
+var XHR = function(method, url) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.responseType = 'json';
+        xhr.onload = () => {
+            if (xhr.status == 200) {
+                resolve(xhr);
+            } else {
+                reject(xhr);
+            }
+        }
+        xhr.onerror = () => {
+            reject('Something went wrong !');
+        }
+        xhr.send();
+    });
+};
+
 const Table = function(a) {
     let root = a || document.body;
     this.gridProps().genTable(root);
@@ -333,7 +352,6 @@ t.countCellNeighbors = function(x, y) {
 t.updateTable = function() {
     this.grid.forEach((e, x) => {
         e.forEach((u, y) => {
-            // console.log(x, y, u);
             if (u == 2) {
                 this.createTempCell(x, y);
             } if (u == 1) {
@@ -381,11 +399,16 @@ t.removeTempCell = function(a, b) {
 t.BeginLife = function() {
     this.updateTable().updateCells();
     this.PlayLifeCycle();
+    this.cyclesCount = 0;
     return (this);
 };
 t.PlayLifeCycle = function() {
     this.lifeCycle = setInterval(() => {
-        this.updateTable().updateCells();
+        this
+            .updateTable()
+            .updateCells()
+            .updateCyclesIndicator()
+            .cyclesCount++;
     }, 1000 / (this.lifespeed || 10));
     return (this);
 };
@@ -402,6 +425,8 @@ t.ClearLife = function() {
     this.PauseLifeCycle();
     this.grid = make2DArray(this.grid_size_x, this.grid_size_y);
     this.updateTable();
+    this.cyclesCount = 0;
+    this.updateCyclesIndicator();
     return (this);
 };
 t.initManualMode = function() {
@@ -432,6 +457,16 @@ t.initManualMode = function() {
 };
 t.ToggleManualMode = function() {
     this.manualMode = !this.manualMode;
+    return (this);
+};
+t.LinkCyclesIndicator = function(a) {
+    if (!a) return
+    this.cycleIndi = a;
+    return (this);
+};
+t.updateCyclesIndicator = function() {
+    if (!this.cycleIndi) return
+    this.cycleIndi.innerText = this.cyclesCount || 0;
     return (this);
 };
 t.evtn = (event, t) => {
@@ -490,22 +525,36 @@ t.makeAliveTemps = function() {
     });
     this.updateTable();
 };
-t.addStructToLib = function(s, b, c) {
+t.addStructsToLib = function(b, c) {
     if (!this.structLib) this.structLib = [];
+    let structs = [],
+        t = this;
 
-    let structs = [];
-    Object.keys(s).forEach((e, i) => {
-        let m = new Struct(s[e], b);
-        this.addStructEvent(m, b);
-        // var itemX = ( i % 3 ) * b / 3 + 10,
-        //     itemY = Math.floor( i / 3 ) * ( b / 3),
-        //     tr = 'translate3d(' + itemX + 'px,' + itemY + 'px, 0)';
-        // m.s.style.transform = tr;
-        // m.s.style.height = b / 3 + "px";
-        // m.s.style.width = b / 3 + "px";
-        structs.push(m.s);
-    });
-    Md(c, structs);
+    (async function(){
+        if (!t.cachedStructLib) {
+            let l = new Loader(true).create(c);
+            t.cachedStructLib = await (async function() {
+                try {
+                    var { response } = await XHR('GET', '/gol/lib/structs-lib');
+                    if (!response || response.isError) return
+                    return (response);
+                } catch (error) {
+                    l.remove();
+                }
+            }());
+            l.remove();
+        }
+        if (!t.cachedStructLib) {
+            return Md(c, Md(Me("div", "str-lin-error"), Me("p", "", {in: "An error occured while loading the structures"})));
+        }
+        Object.keys(t.cachedStructLib).forEach((e, i) => {
+            let m = new Struct(t.cachedStructLib[e], b);
+            t.addStructEvent(m, b);
+            structs.push(m.s);
+        });
+        Md(c, structs);
+    }.bind(this))();
+
     return (this);
 };
 t.initStructEvents = function() {
@@ -572,11 +621,7 @@ t.structMouseUp = function(event) {
 };
 t.structMouseLeave = function(event) {
     if (this._selectedElement) {
-        // console.log(this._selectedElement);
         this._selectedElement.s.classList.add("table-grid-hide");
-        // let r = window.innerWidth / window.innerHeight,
-        //     u = r > 1 ? Math.floor(window.innerWidth / this.csz) : Math.floor(window.innerHeight / this.csz);
-        // this._selectedElement.style.setProperty("--cell-size", u+"px");
     }
 };
 t.structMouseOver = function(event) {
@@ -603,7 +648,6 @@ t.summonStructMenu = function(a) {
 const Struct = function(a, b) {
     this.range = this.getMaxRange(a);
     this.strTable = this.genStructTab(this.range.size);
-    // this.strTable.table.style.setProperty("--cell-size", ((b / 3) / (this.range.size)).toFixed(2)+"px");
     this.fillStructTable(this.strTable, a, this.range);
     this.intrf = Md(Ms(Me("gol-struct", ""), "data-nodrag"), this.strTable.table);
     return ({s: this.intrf, p: a});
@@ -626,7 +670,7 @@ s.getMaxRange = function(a) {
         if (xmin > u.x) xmin = u.x;
         if (ymin > u.y) ymin = u.y;
     });
-    let j = {name: "", max: max, min: min, xmax: xmax, xmin: xmin, ymax: ymax, ymin: ymin, size: 0},
+    let j = {max: max, min: min, xmax: xmax, xmin: xmin, ymax: ymax, ymin: ymin, size: 0},
         h = this.getTableSize(j);
     j.size = h;
     return (j);
@@ -704,7 +748,8 @@ make2DArray = function(cols, rows) {
 };
 
 const Menu = function(a) {
-    if (!a) return
+    if (!a)
+        throw Error("Missing table argument, please provide a Table object.");
     this.dragel = sivz("panel-showreel");
     this.isLiving = false;
     this.isPaused = false;
@@ -712,13 +757,27 @@ const Menu = function(a) {
     this.clr = sivz("clr-lf");
     this.mnl = sivz("mnl-lf");
     this.str = sivz("str-lf");
+    this.lifeCycleIndi = sivz("lf-ccl").querySelector("span");
     this.psi = document.querySelector("panel-slider input");
     this.table = a;
-    this.initControls();
+    this.structLib;
+    this
+        .getStructLib()
+        .initControls();
 };
 let m = Menu.prototype;
+m.getStructLib = function() {
+    let t = this;
+    // (async function() {
+    //     var { response } = await XHR('GET', '/gol/lib/structs-lib');
+    //     if (!response || response.isError) return
+    //     t.structLib = response;
+    // })();
+    return (this);
+};
 m.initControls = function() {
     let t = this;
+    this.table.LinkCyclesIndicator(t.lifeCycleIndi);
     t.bgn.onclick = function() {
         if (!t.isLiving) {
             t.bgn.innerText = "Pause Life";
@@ -751,7 +810,6 @@ m.initControls = function() {
         t.table.ToggleManualMode();
     };
     t.str.onclick = function() {
-        // console.log(t.table.structMenu);
         if (!t.table.structMenu) {
             let pos = t.dragel.getBoundingClientRect();
             t.table.summonStructMenu(Fe("main")[0]);
@@ -769,11 +827,10 @@ m.initControls = function() {
                     },
                 }
             });
-            t.table.addStructToLib(gol_structs, t.table.structMenu.inner.getBoundingClientRect().width, t.table.structMenu.inner);
+            t.table.addStructsToLib(t.table.structMenu.inner.getBoundingClientRect().width, t.table.structMenu.inner);
         }
     };
     t.dragel.querySelector(".menu-close").onclick = function() {
-        console.log("click");
         t.closed = !t.closed;
         let l = t.dragel.querySelector(".panel"),
             p = t.dragel.querySelector(".circled-open");
@@ -827,177 +884,12 @@ m.initControls = function() {
             l.style.width = l.style.height = null;
         })
     };
-}
-
-
-let gol_structs = {
-    h_helice: [
-        {x: 1, y: 0},
-        {x: 0, y: 0},
-        {x: -1, y: 0},
-    ],
-    v_helice: [
-        {x: 0, y: 1},
-        {x: 0, y: 0},
-        {x: 0, y: -1},
-    ],
-    longHelice: [
-        {x: 2, y: 0},
-        {x: 1, y: 0},
-        {x: 0, y: 0},
-        {x: -1, y: 0},
-        {x: -2, y: 0},
-    ],
-    littleSpaceShip: [
-        {x: 0, y: 0},
-        {x: 0, y: -2},
-        {x: 1, y: -3},
-        {x: 2, y: -3},
-        {x: 3, y: -3},
-        {x: 4, y: -3},
-        {x: 4, y: -2},
-        {x: 4, y: -1},
-        {x: 3, y: 0},
-    ],
-    bigSpaceShip: [
-        {x: 0, y: 0},
-        {x: 2, y: 1},
-        {x: 3, y: 1},
-        {x: 0, y: -2},
-        {x: 1, y: -3},
-        {x: 2, y: -3},
-        {x: 3, y: -3},
-        {x: 4, y: -3},
-        {x: 5, y: -3},
-        {x: 6, y: -3},
-        {x: 6, y: -2},
-        {x: 6, y: -1},
-        {x: 5, y: 0},
-    ],
-    plannersCannon: [
-        {x: 0, y: 0},
-        {x: -1, y: 0},
-        {x: -1, y: 1},
-        {x: -1, y: -1},
-        {x: -2, y: 2},
-        {x: -2, y: -2},
-        {x: -3, y: 0},
-        {x: -4, y: -3},
-        {x: -4, y: 3},
-        {x: -5, y: -3},
-        {x: -5, y: 3},
-        {x: -6, y: -2},
-        {x: -6, y: 2},
-        {x: -7, y: -1},
-        {x: -7, y: 1},
-        {x: -7, y: 0},
-        {x: -16, y: -1},
-        {x: -17, y: 0},
-        {x: -17, y: -1},
-        {x: -16, y: 0},
-        {x: 3, y: -1},
-        {x: 3, y: -2},
-        {x: 3, y: -3},
-        {x: 4, y: -1},
-        {x: 4, y: -2},
-        {x: 4, y: -3},
-        {x: 5, y: -4},
-        {x: 5, y: 0},
-        {x: 7, y: -4},
-        {x: 7, y: 0},
-        {x: 7, y: -5},
-        {x: 7, y: 1},
-        {x: 17, y: -2},
-        {x: 18, y: -2},
-        {x: 17, y: -3},
-        {x: 18, y: -3},
-    ],
-    pentadecathlon: [
-        {x: 0, y: 0},
-        {x: 1, y: 0},
-        {x: 2, y: 0},
-        {x: 3, y: 0},
-        {x: 4, y: 0},
-        {x: 5, y: 0},
-        {x: 6, y: 0},
-        {x: 7, y: 0},
-        {x: 8, y: 0},
-        {x: 9, y: 0},
-    ],
-    ossilateur: [
-        {x: 0, y: 0},
-        {x: 0, y: -1},
-        {x: 1, y: -2},
-        {x: 2, y: -2},
-        {x: -1, y: -2},
-        {x: -2, y: -2},
-        {x: 2, y: -4},
-        {x: -2, y: -4},
-        {x: 4, y: -4},
-        {x: -4, y: -4},
-        {x: 4, y: -5},
-        {x: -4, y: -5},
-        {x: 5, y: -6},
-        {x: -5, y: -6},
-        {x: 6, y: -6},
-        {x: -6, y: -6},
-        {x: 4, y: -7},
-        {x: -4, y: -7},
-        {x: 4, y: -8},
-        {x: -4, y: -8},
-        {x: -2, y: -8},
-        {x: 2, y: -8},
-        {x: -2, y: -10},
-        {x: 2, y: -10},
-        {x: 1, y: -10},
-        {x: -1, y: -10},
-        {x: 0, y: -11},
-        {x: 0, y: -12},
-    ],
-    octogone: [
-        {x: 0, y: 1},
-        {x: 1, y: 0},
-        {x: 1, y: 2},
-        {x: 2, y: 1},
-        {x: 3, y: 1},
-        {x: 4, y: 0},
-        {x: 4, y: 2},
-        {x: 5, y: 1},
-        {x: 0, y: 4},
-        {x: 1, y: 3},
-        {x: 1, y: 5},
-        {x: 2, y: 4},
-        {x: 3, y: 4},
-        {x: 4, y: 3},
-        {x: 4, y: 5},
-        {x: 5, y: 4},
-    ],
-    fountain: [
-        {x: 0, y: 0},
-        {x: 1, y: 0},
-        {x: -2, y: 1},
-        {x: 3, y: 1},
-        {x: -2, y: 2},
-        {x: 3, y: 2},
-        {x: -2, y: 3},
-        {x: 3, y: 3},
-        {x: -1, y: 4},
-        {x: 2, y: 4},
-        {x: -1, y: 5},
-        {x: 2, y: 5},
-        {x: -2, y: 6},
-        {x: 3, y: 6},
-        {x: -3, y: 6},
-        {x: 4, y: 6},
-        {x: -3, y: 5},
-        {x: 4, y: 5},
-    ]
+    return (this);
 }
 
 const beginGame = function() {
     let table = new Table(document.querySelector("gol-grid"));
     new Menu(table);
-    // table.structAdder(gol_structs.ossilateur, 50, 25);
 };
 
 (function() {

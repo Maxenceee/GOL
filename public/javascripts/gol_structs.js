@@ -245,40 +245,51 @@ function canadaGoose(grid, startX, startY)
   grid[startX - 1][startY - 2] = 1
   grid[startX][startY - 3] = 1
   grid[startX + 1][startY - 2] = 1
+
   grid[startX + 2][startY - 2] = 1
   grid[startX + 2][startY - 3] = 1
   grid[startX + 3][startY - 3] = 1
+
+  grid[startX + 4][startY - 2] = 1
   grid[startX + 4][startY - 3] = 1
   grid[startX + 4][startY - 4] = 1
-  grid[startX + 4][startY - 2] = 1
+
   grid[startX + 5][startY - 3] = 1
   grid[startX + 5][startY - 4] = 1
   grid[startX + 5][startY - 5] = 1
+
   grid[startX + 5][startY - 6] = 1
   grid[startX + 6][startY - 5] = 1
   grid[startX + 6][startY - 6] = 1
+
   grid[startX + 7][startY - 8] = 1
   grid[startX + 8][startY - 9] = 1
   grid[startX + 8][startY - 10] = 1
-  grid[startX + 9][startY - 9] = 1
+
   grid[startX + 9][startY - 8] = 1
+  grid[startX + 9][startY - 9] = 1
   
   grid[startX + 1][startY - 5] = 1
   grid[startX + 1][startY - 6] = 1
   grid[startX + 1][startY - 7] = 1
+
   grid[startX + 2][startY - 5] = 1
   grid[startX + 2][startY - 6] = 1
   grid[startX + 2][startY - 7] = 1
+
   grid[startX - 1][startY - 7] = 1
   grid[startX - 1][startY - 8] = 1
   grid[startX - 2][startY - 8] = 1
   
   grid[startX + 5][startY] = 1
   grid[startX + 7][startY] = 1
-  grid[startX + 7][startY - 1] = 1
+
   grid[startX + 6][startY - 1] = 1
+  grid[startX + 7][startY - 1] = 1
+
   grid[startX + 6][startY - 2] = 1
   grid[startX + 8][startY + 1] = 1
+
   grid[startX + 6][startY + 2] = 1
   grid[startX + 7][startY + 2] = 1
   
@@ -300,64 +311,83 @@ function bigFuckingShip(startX, startY)
   grid[startX][startY] = 1
   grid[startX][startY + 8] = 1
   grid[startX][startY + 1] = 1
+
   grid[startX + 1][startY] = 1
   grid[startX + 1][startY + 8] = 1
   grid[startX + 2][startY] = 1
+
   grid[startX + 2][startY + 1] = 1
   grid[startX + 2][startY + 5] = 1
   grid[startX + 2][startY + 6] = 1
+
   grid[startX + 3][startY] = 1
   grid[startX + 3][startY + 3] = 1
   grid[startX + 3][startY + 6] = 1
+
   grid[startX + 4][startY] = 1
   grid[startX + 4][startY + 2] = 1
   grid[startX + 4][startY + 8] = 1
+
   grid[startX + 5][startY] = 1
   grid[startX + 5][startY + 6] = 1
   grid[startX + 5][startY + 7] = 1
+
   grid[startX + 5][startY + 8] = 1
   grid[startX + 6][startY] = 1
   grid[startX + 6][startY + 2] = 1
+
   grid[startX + 6][startY + 7] = 1
   grid[startX + 7][startY] = 1
   grid[startX + 8][startY + 1] = 1
-  grid[startX + 9][startY + 1] = 1
+
   grid[startX + 8][startY + 2] = 1
+  grid[startX + 9][startY + 1] = 1
   grid[startX + 9][startY + 2] = 1
+
   grid[startX + 9][startY + 4] = 1
   grid[startX + 9][startY + 5] = 1
   grid[startX + 10][startY + 3] = 1
 
-  grid[startX][startY] = 1
-  grid[startX][startY] = 1
+
+
   grid[startX][startY - 8] = 1
+
   grid[startX][startY - 1] = 1
   grid[startX + 1][startY] = 1
   grid[startX + 1][startY - 8] = 1
+
   grid[startX + 2][startY] = 1
   grid[startX + 2][startY - 1] = 1
   grid[startX + 2][startY - 5] = 1
+
   grid[startX + 2][startY - 6] = 1
   grid[startX + 3][startY] = 1
   grid[startX + 3][startY - 3] = 1
+
   grid[startX + 3][startY - 6] = 1
   grid[startX + 4][startY] = 1
   grid[startX + 4][startY - 2] = 1
+
   grid[startX + 4][startY - 8] = 1
   grid[startX + 5][startY] = 1
   grid[startX + 5][startY - 6] = 1
+
   grid[startX + 5][startY - 7] = 1
   grid[startX + 5][startY - 8] = 1
   grid[startX + 6][startY] = 1
+
   grid[startX + 6][startY - 2] = 1
   grid[startX + 6][startY - 7] = 1
   grid[startX + 7][startY] = 1
+
   grid[startX + 8][startY - 1] = 1
-  grid[startX + 9][startY - 1] = 1
   grid[startX + 8][startY - 2] = 1
+  grid[startX + 9][startY - 1] = 1
+
   grid[startX + 9][startY - 2] = 1
   grid[startX + 9][startY - 4] = 1
   grid[startX + 9][startY - 5] = 1
+
   grid[startX + 10][startY - 3] = 1
 
 }
@@ -401,38 +431,50 @@ function ossilateurArrounded(startX, startY)
 
   grid[startX][startY] = 1
   grid[startX][startY - 1] = 1
+
   grid[startX + 1][startY - 1] = 1
   grid[startX - 1][startY - 1] = 1
   grid[startX + 1][startY - 2] = 1
+
   grid[startX + 2][startY - 2] = 1
   grid[startX - 1][startY - 2] = 1
   grid[startX - 2][startY - 2] = 1
+
   grid[startX - 3][startY - 2] = 1
   grid[startX + 3][startY - 2] = 1
   grid[startX - 3][startY - 3] = 1
+
   grid[startX + 3][startY - 3] = 1
   grid[startX - 3][startY - 4] = 1
   grid[startX + 3][startY - 4] = 1
+
   grid[startX - 4][startY - 4] = 1
   grid[startX + 4][startY - 4] = 1
   grid[startX - 4][startY - 5] = 1
+
   grid[startX + 4][startY - 5] = 1
   grid[startX - 5][startY - 5] = 1
   grid[startX + 5][startY - 5] = 1
+
   grid[startX - 4][startY - 6] = 1
   grid[startX + 4][startY - 6] = 1
   grid[startX - 3][startY - 6] = 1
+
   grid[startX + 3][startY - 6] = 1
   grid[startX - 3][startY - 7] = 1
   grid[startX + 3][startY - 7] = 1
+
   grid[startX - 3][startY - 8] = 1
   grid[startX + 3][startY - 8] = 1
   grid[startX - 2][startY - 8] = 1
+
   grid[startX + 2][startY - 8] = 1
   grid[startX - 1][startY - 8] = 1
   grid[startX + 1][startY - 8] = 1
+
   grid[startX - 1][startY - 9] = 1
   grid[startX + 1][startY - 9] = 1
+
   grid[startX][startY - 9] = 1
   grid[startX][startY - 10] = 1
 
@@ -465,33 +507,39 @@ function cross(startX, startY)
   grid[startX][startY] = 1
   grid[startX][startY - 1] = 1
   grid[startX][startY - 2] = 1
+
   grid[startX - 1][startY - 2] = 1
   grid[startX + 1][startY] = 1
   grid[startX + 2][startY] = 1
+
   grid[startX + 2][startY + 1] = 1
   grid[startX + 2][startY + 2] = 1
   grid[startX + 2][startY + 3] = 1
+
   grid[startX + 1][startY + 3] = 1
   grid[startX][startY + 3] = 1
   grid[startX][startY + 4] = 1
+
   grid[startX][startY + 5] = 1
-  grid[startX - 1][startY + 5] = 1
   grid[startX - 1][startY + 5] = 1
 
   grid[startg][startY] = 1
   grid[startg][startY - 1] = 1
   grid[startg][startY - 2] = 1
+
   grid[startg + 1][startY - 2] = 1
   grid[startg - 1][startY] = 1
   grid[startg - 2][startY] = 1
+
   grid[startg - 2][startY + 1] = 1
   grid[startg - 2][startY + 2] = 1
   grid[startg - 2][startY + 3] = 1
+
   grid[startg - 1][startY + 3] = 1
   grid[startg][startY + 3] = 1
   grid[startg][startY + 4] = 1
+
   grid[startg][startY + 5] = 1
-  grid[startg + 1][startY + 5] = 1
   grid[startg + 1][startY + 5] = 1
 
 }
@@ -502,22 +550,28 @@ function diagonale(startX, startY)
   grid[startX][startY] = 1
   grid[startX + 1][startY + 1] = 1
   grid[startX][startY + 2] = 1
+
   grid[startX - 1][startY + 1] = 1
   grid[startX - 1][startY + 2] = 1
   grid[startX - 2][startY + 1] = 1
+
   grid[startX - 3][startY + 2] = 1
   grid[startX - 3][startY + 3] = 1
   grid[startX - 3][startY + 4] = 1
+
   grid[startX - 4][startY + 4] = 1
 
   grid[startX][startY - 1] = 1
   grid[startX - 1][startY - 2] = 1
   grid[startX][startY - 3] = 1
+
   grid[startX + 1][startY - 2] = 1
   grid[startX + 1][startY - 3] = 1
   grid[startX + 2][startY - 2] = 1
+
   grid[startX + 3][startY - 3] = 1
   grid[startX + 3][startY - 4] = 1
+
   grid[startX + 3][startY - 5] = 1
   grid[startX + 4][startY - 5] = 1
 
