@@ -1,6 +1,6 @@
 # Game Of Life
 
-The Game Of Life fully made in Vanilla JS and running on a Node.JS server.
+The Game Of Life fully made in Vanilla Javascript and running on a Node.JS server.
 
 ## Usage
 
