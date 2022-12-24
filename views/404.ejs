@@ -4,10 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
-    <link rel="icon" type="image/png" href='https://papangsurfschool.fr/content/p/favicon-256x246.ico' sizes="256x246">
-    <link rel="apple-touch-icon" href='https://papangsurfschool.fr/content/p/favicon-256x246.ico' sizes="256x246">
-    <link rel="preload" as="image" href="https://papangsurfschool.fr/content/p/logo_papang_surf_.png">
-    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="icon" type="image/png" href='/images/gol_icon.png' sizes="256x246">
+    <link rel="apple-touch-icon" href='/images/gol_icon.png' sizes="256x246">
+    <link rel="shortcut icon" type="image/png" href="/images/gol_icon.png"/>
+    <style>
+        .nf-b {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            display: -webkit-flex;
+            -webkit-box-pack: center;
+                -ms-flex-pack: center;
+                    justify-content: center;
+            -webkit-box-align: center;
+                -ms-flex-align: center;
+                    align-items: center;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+                -ms-flex-direction: column;
+                    flex-direction: column;
+        }
+
+        .nf-b svg {
+            position: relative;
+            height: 40%;
+        }
+
+        .nf-tt {
+            margin-top: 5%;
+            color: #666666;
+            font: 1.4rem "Josefin Sans", sans-serif;
+        }
+
+        .nf-back {
+            position: relative;
+            width: 150px;
+            height: 40px;
+            border: 1.5px solid #666666;
+            border-radius: 20px;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            display: -webkit-flex;
+            -webkit-box-pack: center;
+                -ms-flex-pack: center;
+                    justify-content: center;
+            -webkit-box-align: center;
+                -ms-flex-align: center;
+                    align-items: center;
+            color: #666666;
+            margin-top: 3%;
+            -webkit-transition: 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+            transition: 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+        }
+
+        .nf-back a {
+            text-decoration: none;
+            text-align: center;
+            color: #000;
+        }
+
+        body.desktop .nf-back:hover {
+            -webkit-transition: 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+            transition: 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+            -webkit-box-shadow: 0px 5px 5px #66666691;
+                    box-shadow: 0px 5px 5px #66666691;
+            -webkit-transform: translateY(-5px);
+                    transform: translateY(-5px);
+        }
+
+        @media screen and (max-width: 850px) {
+            .nf-b svg {
+                width: 70%;
+                height: 50%;
+            }
+            .nf-back  {
+                margin-top: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="nf-b">
