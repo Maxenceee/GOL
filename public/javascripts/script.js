@@ -403,6 +403,7 @@ t.BeginLife = function() {
     return (this);
 };
 t.PlayLifeCycle = function() {
+    this.isliving = true;
     this.lifeCycle = setInterval(() => {
         this
             .updateTable()
@@ -413,6 +414,7 @@ t.PlayLifeCycle = function() {
     return (this);
 };
 t.PauseLifeCycle = function() {
+    this.isliving = false;
     clearInterval(this.lifeCycle);
     this.updateTable();
     return (this);
@@ -585,6 +587,10 @@ t.addStructEvent = function(s, b) {
             this._selectedElement.s.classList.add('draggable-struct');
             this._selectedElement.s.classList.add('dd-selected');
             this._selectedElement.s.classList.remove('dd-transition');
+
+            this.restartAfter = this.isliving ? true : false;
+            console.log("pause", "restart", this.restartAfter);
+            this.PauseLifeCycle();
         }
     });
 };
@@ -617,6 +623,11 @@ t.structMouseUp = function(event) {
         this._selectedElement = null;
         this._originalClickCoords = null;
         this._savedClickCoords = null;
+
+        if (undefined !== this.restartAfter && this.restartAfter == true) {
+            this.PlayLifeCycle();
+            console.log("play");
+        }
     }
 };
 t.structMouseLeave = function(event) {
@@ -892,6 +903,6 @@ const beginGame = function() {
     new Menu(table);
 };
 
-(function() {
+!function() {
     window.setTimeout(() => beginGame());
-})();
+}();
