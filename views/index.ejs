@@ -245,11 +245,15 @@
 					</div>
 					<div class="panel-container-col">
 						<p>Life Speed</p>
-						<panel-slider data-nodrag class='range'></panel-slider>
+						<panel-slider id="panel-slider-lifespeed" step="1" min="1" max="100" value="10" data-nodrag class='range'></panel-slider>
 					</div>
 					<div class="panel-container-row">
 						<button data-nodrag class="panel-button" id="mnl-lf">Manual Mode</button>
 						<button data-nodrag class="panel-button" id="str-lf">Add Struct</button>
+					</div>
+					<div class="panel-container-col">
+						<p>Grid resolution</p>
+						<panel-slider id="panel-slider-gridres" step="10" min="10" max="200" value="100" type="ratio" data-nodrag class='range'></panel-slider>
 					</div>
 					<div class="panel-container-row">
 						<p class="panel-text" id="lf-ccl">Life cycles <span>0</span></p>
@@ -261,7 +265,7 @@
 
     <script type="text/javascript">
 		this.gbar_ = {
-			CONFIG: [[[["style.min.css"], ["script.js", "anime.min.js"]], ["/stylesheets/", "/javascripts/"]]],
+			CONFIG: [[[["style.min.css"], ["script.min.js", "anime.min.js"]], ["/stylesheets/", "/javascripts/"]]],
 		};
 		this.gbar_ = this.gbar_ || {};
 		(function(_) {
