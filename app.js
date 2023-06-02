@@ -39,7 +39,7 @@ morgan.token('current_time', (req, res) => {
 });
 
 morgan.token('server_instance', (req, res) => {
-    return "\tOAuth/API"
+    return "\tGOL"
 });
 
 morgan.token('methode', (req, res) => {
