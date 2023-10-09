@@ -2,6 +2,8 @@
 
 The Game Of Life fully made in Vanilla Javascript and running on a Node.JS server.
 
+[Try it here!](https://gol.maxencegama.dev)
+
 ## Usage
 
 Clone this project and open current directory into a terminal, then install dependencies by running:
