@@ -39,6 +39,9 @@ const ne = class extends HTMLElement {
 		this.startOffsetY = 0;
 		this.startClientX = 0;
 		this.startClientY = 0;
+		this.floatIndi = null;
+		this.floatIndiEnabled = false;
+		this.isFloatingLeft = false;
 
 		this.preventClickDuringDrag = e => {
 			this.dragging && e.preventDefault()
@@ -47,7 +50,11 @@ const ne = class extends HTMLElement {
 			!Ie(e) && (e.preventDefault(), addEventListener("mousemove", this.mouseMove), addEventListener("mouseup", this.mouseUp), this.dragStart(e))
 		};
 		this.mouseMove = e => {
-			e.preventDefault(),
+			e.preventDefault()
+			if (e.clientX < 150 && this.offsetX < 0)
+				this.hoverFloatLeft();
+			else
+				this.leaveFloatLeft();
 			this.dragMove(e)
 		};
 		this.mouseUp = () => {
@@ -71,6 +78,8 @@ const ne = class extends HTMLElement {
 		this.startOffsetY = this.offsetY,
 		this.startClientX = e,
 		this.startClientY = t
+		if (this.isFloatingLeft)
+			this.endFloatLeft();
 	}
 	dragMove({clientX: e, clientY: t})
 	{
@@ -88,6 +97,40 @@ const ne = class extends HTMLElement {
 		requestAnimationFrame(() => {
 			this.dragging = !1
 		})
+		if (this.floatIndiEnabled)
+			this.floatLeft();
+	}
+	hoverFloatLeft() {
+		if (this.floatIndiEnabled)
+			return;
+		this.floatIndi = document.createElement("div");
+		this.floatIndi.classList.add("panel-placement");
+		document.querySelector("gol-grid").appendChild(this.floatIndi);
+		this.floatIndiEnabled = true;
+	}
+	leaveFloatLeft() {
+		if (this.floatIndiEnabled) {
+			this.floatIndi.remove();
+			this.floatIndiEnabled = false;
+		}
+	}
+	floatLeft() {
+		this.classList.add("float-left");
+		this.floatIndi.remove();
+		this.floatIndiEnabled = false;
+		this.isFloatingLeft = true;
+		let pos = this.getBoundingClientRect();
+		document.querySelector("gol-grid").style.marginLeft = pos.width+"px";
+		this.offsetX = 0,
+		this.offsetY = 0,
+		this.style.setProperty("--x", `${this.offsetX}px`),
+		this.style.setProperty("--y", `${this.offsetY}px`)
+	}
+	endFloatLeft() {
+		document.querySelector("gol-grid").style.marginLeft = null;
+		this.classList.remove("float-left");
+		this.isFloatingLeft = false;
+		this.hoverFloatLeft();
 	}
 }
 
@@ -503,10 +546,11 @@ t.rmvw = function(a, b) {
 t.structAdder = function(s, a, b, c) {
 	if (!s || !a || !b) return
 	s.forEach((e) => {
+		if (a + e.x < 0 || b + e.y < 0 || a + e.x > this.grid.length || !this.grid[a + e.x] || b + e.y > this.grid[a + e.x].length) return
 		if (c && this.grid[a + e.x][b + e.y] == 1)
-			this.grid[a + e.x][b + e.y] = 3;
-		else 
-			this.grid[a + e.x][b + e.y] = !c ? 1 : 2;
+		this.grid[a + e.x][b + e.y] = 3;
+	else 
+	this.grid[a + e.x][b + e.y] = !c ? 1 : 2;
 	});
 	this.updateTable();
 	return (this);
@@ -514,6 +558,7 @@ t.structAdder = function(s, a, b, c) {
 t.structRemover = function(s, a, b, c) {
 	if (!s || !a || !b) return
 	s.forEach((e) => {
+		if (a + e.x < 0 || b + e.y < 0 || a + e.x > this.grid.length || !this.grid[a + e.x] || b + e.y > this.grid[a + e.x].length) return
 		if (c && this.grid[a + e.x][b + e.y] == 3)
 			this.grid[a + e.x][b + e.y] = 1;
 		else 
